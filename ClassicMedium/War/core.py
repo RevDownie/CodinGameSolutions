@@ -47,7 +47,7 @@ def debug_log(msg):
 # comparable values
 #
 def convert_deck_to_values(deck):
-	return map(lambda c: VALUE_MAP.index(c[0]), deck)
+	return map(lambda c: VALUE_MAP.index(c[0:-1]), deck)
 
 # Runs the simulation with the given input data
 #
