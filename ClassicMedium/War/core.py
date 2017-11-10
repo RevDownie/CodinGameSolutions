@@ -82,7 +82,7 @@ def run(unparsed_decks, expected_output = None):
 			# Winner takes the cards - order is player 1 then player 2
 			for c in fight_cards:
 				decks[who_won_fight].insert(0, c) 
-			# debug_log(str.format("DECKS: {}", decks))
+			debug_log(str.format("DECKS: {}", decks))
 
 		else:
 			# War
