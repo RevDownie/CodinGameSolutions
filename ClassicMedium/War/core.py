@@ -78,7 +78,7 @@ def run(unparsed_decks, expected_output = None):
 			# War
 			None
 
-		debug_log(str.format("FIGHT: Round: {}, Cards: {} vs {}. Winner: {}", round_num, fight_cards[0], fight_cards[1], who_won_fight))
+		debug_log(str.format("FIGHT: Round: {}, Cards: {} vs {}. Winner: {}", round_num, fight_cards[0], fight_cards[1], who_won_fight + 1))
 
 		# Check for a winner (i.e. if a player has no cards left they lose)
 		who_won_game = -1
@@ -88,7 +88,7 @@ def run(unparsed_decks, expected_output = None):
 				break
 
 		if who_won_game >= 0:
-			debug_log(str.format("WINNER: {}", who_won_game))
+			debug_log(str.format("WINNER: {}", who_won_game + 1))
 			break
 
 	# Output answer
