@@ -1,0 +1,83 @@
+# Test that allows Bender to reach the goal while testing all possible rules
+
+import core
+
+SAMPLE_INPUT_DIMS = '15 15'
+SAMPLE_INPUT_GRID_LINES = [
+'###############',
+'#      IXXXXX #',
+'#  @          #',
+'#             #',
+'#             #',
+'#  I          #',
+'#  B          #',
+'#  B   S     W#',
+'#  B   T      #',
+'#             #',
+'#         T   #',
+'#         B   #',
+'#            $#',
+'#        XXXX #',
+'###############']
+
+SAMPLE_EXPECTED_OUTPUT_LINES = [
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'WEST',
+'WEST',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'NORTH',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'EAST',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'WEST',
+'WEST',
+'WEST',
+'WEST',
+'WEST',
+'WEST',
+'SOUTH',
+'SOUTH',
+'SOUTH',
+'EAST',
+'EAST',
+'EAST'
+]
+
+h, w = core.parse_dims(SAMPLE_INPUT_DIMS)
+grid = core.parse_grid(SAMPLE_INPUT_GRID_LINES, w, h)
+core.run(grid, SAMPLE_EXPECTED_OUTPUT_LINES)
