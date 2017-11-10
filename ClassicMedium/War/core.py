@@ -31,6 +31,7 @@
 # TO CONSIDER
 # The player has a main root deck and sub decks for each war, this forms a chain but we don't need a hierarchy.
 # The suits are irrelevant so we should just convert to numeric values 
+# Use recursion to perform the FIGHT on the war sub-deck
 
 import sys
 
@@ -59,6 +60,40 @@ def try_get_winner_index(decks):
 
 	return -1
 
+# Run a single fight on the given decks. This is recursive as if there is a draw
+# we fight on the sub-deck
+#
+def run_fight(decks, rn):
+	round_num = rn + 1
+
+	# Reveal (remove) the top card for each player and compare (Note: our top card is the last card in the array)
+	fight_cards = [decks[0].pop(), decks[1].pop()]
+
+	who_won_fight = 0 if fight_cards[0] > fight_cards[1] else 1 if fight_cards[1] > fight_cards[0] else -1
+
+	# Check for outright winner
+	if who_won_fight >= 0:
+		# Winner takes the cards - order is player 1 then player 2
+		for c in fight_cards:
+			decks[who_won_fight].insert(0, c) 
+		debug_log(str.format("FIGHT: Round: {}, Cards: {} vs {}. Winner: {}", round_num, fight_cards[0], fight_cards[1], who_won_fight + 1))
+		debug_log(str.format("DECKS: {}", decks))
+		return (who_won_fight, round_num)
+
+	# If it's a draw we go to War
+	# If one player runs out of cards then the whole game is a draw
+	is_draw = len(filter(lambda d: len(d) >= 3, decks)) < len(decks)
+	if is_draw == True:
+		return (-1, round_num)
+
+	# Take the next three cards from the deck and form a sub-deck then fight using that
+	sub_decks = [[], []]
+	for d in range(0, len(decks)):
+		for i in range(0, 3):
+			sub_decks[d].append(decks[d].pop())
+	return run_fight(sub_decks, round_num)
+
+
 # Runs the simulation with the given input data
 #
 def run(unparsed_decks, expected_output = None):
@@ -69,35 +104,18 @@ def run(unparsed_decks, expected_output = None):
 	who_won_game = -1
 
 	for x in range(0, 100): # Supposed to be a forever loop but adding a cap in case I mess up and get stuck
-
-		# New round
-		round_num = round_num + 1
-
-		# Reveal (remove) the top card for each player and compare (Note: our top card is the last card in the array)
-		fight_cards = [decks[0].pop(), decks[1].pop()]
-
-		who_won_fight = 0 if fight_cards[0] > fight_cards[1] else 1 if fight_cards[1] > fight_cards[0] else -1
-
-		if who_won_fight >= 0:
-			# Winner takes the cards - order is player 1 then player 2
-			for c in fight_cards:
-				decks[who_won_fight].insert(0, c) 
-			debug_log(str.format("DECKS: {}", decks))
-
-		else:
-			# War
-			None
-
-		debug_log(str.format("FIGHT: Round: {}, Cards: {} vs {}. Winner: {}", round_num, fight_cards[0], fight_cards[1], who_won_fight + 1))
+		_, round_num = run_fight(decks, round_num)
 
 		# Check for a winner (i.e. if a player has no cards left they lose)
 		who_won_game = try_get_winner_index(decks)
 		if who_won_game >= 0:
 			debug_log(str.format("WINNER: {}", who_won_game + 1))
 			break
+		else:
+			debug_log("DRAW")
 
 	# Output answer
-	answer = str.format("{} {}", who_won_game + 1, round_num)
+	answer = "PAT" if who_won_game < 0 else str.format("{} {}", who_won_game + 1, round_num)
 	if expected_output != None:
 		debug_log("Finished: " + "SUCCESS" if answer == expected_output else "FAILED")
 	print(answer)
