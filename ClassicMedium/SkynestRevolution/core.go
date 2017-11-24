@@ -49,15 +49,29 @@ func contains(vals []int, val int) bool {
 	return false
 }
 
+///
+func indexOf(vals []int, val int) int {
+	for i,v := range vals {
+		if v == val {
+			return i
+		}
+	}
+
+	return -1
+}
+
 /// Given the starting node and the links between each node search the tree breadth-first
 /// until we come across the first gateway. Return the node indices of the path taken to reach that gateway
 /// Returns nil if no exit found
 ///
-func findShortestPathToGateway(startNodeIdx int, links [][]int, exits []int) []int {
+func findShortestPathToGateway(startNodeIdx int, links [][]int, exits []int) *list.List {
 	toVisitQueue := list.New()
-	visited := make([]bool, len(links))
+	visitedFrom := make([]int, len(links))
+	for i := range visitedFrom {
+		visitedFrom[i] = -1
+	}
 
-	visited[startNodeIdx] = true
+	visitedFrom[startNodeIdx] = startNodeIdx
 	toVisitQueue.PushFront(startNodeIdx)
 
     for {
@@ -70,17 +84,26 @@ func findShortestPathToGateway(startNodeIdx int, links [][]int, exits []int) []i
     	nodeIdx := queueEl.Value.(int)
     	toVisitQueue.Remove(queueEl)
 
-    	debugLog(nodeIdx)
 	    for _,n := range links[nodeIdx] {
 	    	//When we sever a link we set it to -1
 	    	if n >= 0 {
 	    		if contains(exits, n) == true {
-	    			//Found an exit
-	    			return make([]int, 1)
+	    			//Found an exit build the path by going back through the parent links
+	    			path := list.New()
+	    			path.PushFront(n)
+	    			
+	    			for {
+	    				path.PushFront(nodeIdx)
+	    				nodeIdx = visitedFrom[nodeIdx]
+	    				if nodeIdx == visitedFrom[nodeIdx] {
+	    					break
+						}
+	    			}
+	    			return path
 	    		}
 
-	    		if visited[n] == false {
-		    		visited[n] = true
+	    		if visitedFrom[n] < 0 {
+		    		visitedFrom[n] = nodeIdx
 			    	toVisitQueue.PushFront(n)
 			    }
 			}
@@ -91,6 +114,20 @@ func findShortestPathToGateway(startNodeIdx int, links [][]int, exits []int) []i
 	return nil
 }
 
+/// Print the contents of the list each on a new line
+///
+func debugPrintList(l *list.List) {
+	el := l.Front()
+	for {
+		if el == nil {
+			break
+		}
+		debugLog(el.Value)
+
+		el = el.Next()
+	}
+}
+
 /// Used by CodinGame to feed us the input via stdin
 ///
 func main() {
@@ -99,46 +136,49 @@ func main() {
 	var numNodes, numLinks, numExits int
 	fmt.Scan(&numNodes, &numLinks, &numExits)
 
+	//Each node index contains a list of all nodes it links to
+    links := make([][]int, numNodes)
+    exits := make([]int, numExits)
+
 	//Read the links between node indexes
 	for i:=0; i<numLinks; i++ {
 		var n1, n2 int;
 		fmt.Scan(&n1, &n2)
+
+		links[n1] = append(links[n1], n2)
+		links[n2] = append(links[n2], n1)
 	}
 
 	//Read the node index of each exit gateway
 	for i:=0; i<numExits; i++ {
 		var n int;
 		fmt.Scan(&n)
+
+		exits[i] = n
 	}
 
-	//Each node index contains a list of all nodes it links to
-    links := make([][]int, 6)
-    links[0] = []int{1,2}
-    links[1] = []int{0,3,4}
-    links[2] = []int{0}
-    links[3] = []int{1}
-    links[4] = []int{1,5}
-    links[5] = []int{4}
-
-    exits := []int{5}
-
 	//Each turn we read the node index of the agent and output the link to sever in order to trap it
-    for turn:=0; turn<1; turn++ { //Should be a forever loop but want my tests to terminate
+    for {
     	var agentNodeIndex int;
 		fmt.Scan(&agentNodeIndex)
 
 	    //Find the path to the nearest gateway exit from the agent location and sever the first link on that path
 	    //We sever the first link as there is an additional goal to limit the amount of moves that the agent can make
-    	findShortestPathToGateway(0, links, exits)
+    	path := findShortestPathToGateway(agentNodeIndex, links, exits)
+
+    	debugLog("Shortest Path:")
+    	debugPrintList(path)
+
+    	firstEl := path.Front()
+    	n1 := firstEl.Value.(int)
+    	n2 := firstEl.Next().Value.(int)
+    	debugLog(fmt.Sprintf("Cutting link between %d => %d", n1, n2))
 
     	//Don't forget to update our local state to reflect the new graph
+    	n2Idx := indexOf(links[n1], n2)
+    	links[n1][n2Idx] = -1
+
+    	//Tell CodinGame what link we severed
+    	fmt.Printf("%d %d\n", n1, n2)
     }
-
-
-	// 	nextX, nextY, tileId := decide_next_location(x, y, dir, &grid, tilemappings)
-	// 	debugLog(fmt.Sprintf("Sx %d, Sy %d. Dir %s. TileId %d. Nx %d, Ny %d", x, y, dir, tileId, nextX, nextY))
-
-	// 	// Send answer to CodinGame
-	// 	fmt.Printf("%d %d\n", nextX, nextY)
- //    }
 }
