@@ -17,7 +17,10 @@
 # TO CONSIDER
 # We should always take the max distance from our epicentre to the tips as the answer as this will represent the minimum time required
 # Do we calculate the max distance for each node and track the shortest or is there an algorithm that will allow us to pinpoint the epicentre node immediately?
-# The blurb for the problem specifies memoization which prob means that a straightforward search approach will be too slow and we need to cache data. No mention as to what the time limit is
+# The blurb for the problem specifies memoization which prob means that a straightforward search approach will be too slow and we need to cache the max dists. No mention as to what the time limit is - forum posts suggests that timeout is ~5000ms
+# We don't have to search the whole tree everytime we just have to search until we exceed the current max
+# We could always thread the search and calculate node distances in parallel
+# Is there a heuristic that will give us the best node to start with that will give us more early outs during traversal?
 
 import sys
 from collections import defaultdict
@@ -28,9 +31,10 @@ from collections import defaultdict
 def debug_log(msg):
 	sys.stderr.write(str(msg) + '\n')
 
-# Perform a depth-first search from the given node and store the distance from each node to the furthest leaf node
+# Perform a depth-first search from the given node and store the distance from each node to the furthest leaf node. Will stop if
+# the max distance matches or exceeds the given threshold
 # 
-def find_longest_distance_to_leaf(start_node, links):
+def find_longest_distance_to_leaf(start_node, links, max_dist_thresh):
 	to_visit = list()
 	visited = set()
 	depth = list()
@@ -47,6 +51,8 @@ def find_longest_distance_to_leaf(start_node, links):
 		current_depth = depth.pop()
 
 		max_dist = max(max_dist, current_depth)
+		if max_dist >= max_dist_thresh:
+			return max_dist_thresh
 		# debug_log(str.format("Visiting node {} dist is {}", node, current_depth))
 
 		for linked_node in node_links:
@@ -61,16 +67,32 @@ def find_longest_distance_to_leaf(start_node, links):
 
 # Links are adjacency lists where each node key of the dictionary contains the other linked node indices
 # We traverse the graph and calculate the max distance from each node to the the edge of the graph
-# and then find the shortest of those
+# and then find the shortest of those. 
+# 
+# We optimise by 
+# 	* Stop traversing if we exceed the current max
 # 
 def run(links, expected_output = None):
-	max_dists = map(lambda n: find_longest_distance_to_leaf(n, links), links.keys())
-	min_max_dist = min(max_dists)
+	min_max_dist = sys.maxint
+	for n in links.keys():
+		min_max_dist = find_longest_distance_to_leaf(n, links, min_max_dist)
+
 	if expected_output != None:
 		print("SUCCESS" if min_max_dist == expected_output else str.format("FAIL expected {}", expected_output))
 
 	# Output the answer to CodinGame
 	print(min_max_dist)
+
+# Used by the tests to convert lines of linked nodes into adjacency lists
+# 
+def parse_links(unparsed_links):
+	links = defaultdict(list)
+	for nodes in unparsed_links:
+		n1, n2 = [int(node) for node in nodes.split()]
+		links[n1].append(n2)
+		links[n2].append(n1)
+
+	return links
 
 # Used when running in CodinGame to read input from stdinput
 #
