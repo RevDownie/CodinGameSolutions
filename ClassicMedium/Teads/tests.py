@@ -15,7 +15,6 @@ def test_08():
 
 if __name__ == "__main__":
 	import timeit
-	# print(str.format("Test01 complete in {}", timeit.timeit(test_01, number=1)))
-	# print(str.format("Test02 complete in {}", timeit.timeit(test_02, number=1)))
+	print(str.format("Test01 complete in {}", timeit.timeit(test_01, number=1)))
+	print(str.format("Test02 complete in {}", timeit.timeit(test_02, number=1)))
 	print(str.format("Test08 complete in {}", timeit.timeit(test_08, number=1)))
-
